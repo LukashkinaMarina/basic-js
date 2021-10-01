@@ -1,31 +1,33 @@
-import { NotImplementedError } from '../extensions/index.js';
-
-/**
- * Implement class VigenereCipheringMachine that allows us to create
- * direct and reverse ciphering machines according to task description
- * 
- * @example
- * 
- * const directMachine = new VigenereCipheringMachine();
- * 
- * const reverseMachine = new VigenereCipheringMachine(false);
- * 
- * directMachine.encrypt('attack at dawn!', 'alphonse') => 'AEIHQX SX DLLU!'
- * 
- * directMachine.decrypt('AEIHQX SX DLLU!', 'alphonse') => 'ATTACK AT DAWN!'
- * 
- * reverseMachine.encrypt('attack at dawn!', 'alphonse') => '!ULLD XS XQHIEA'
- * 
- * reverseMachine.decrypt('AEIHQX SX DLLU!', 'alphonse') => '!NWAD TA KCATTA'
- * 
- */
 export default class VigenereCipheringMachine {
-  encrypt() {
-    throw new NotImplementedError('Not implemented');
-    // remove line with error and write your code here
+  constructor(direct = true) {
+    this.direct = direct;
   }
-  decrypt() {
-    throw new NotImplementedError('Not implemented');
-    // remove line with error and write your code here
+
+  process(text, key, decode) {
+    if (!text || !key) throw new Error("Incorrect arguments!");
+    const prepareReg = /[^A-Z\!\@\#\$\(\)\,\.\/\|\*\-\&\^\%\s\:0-9]/g;
+    const secondReg = /[A-Z]/g;
+    const calcCode = (value) => value.charCodeAt(0) - 65;
+    const prepare = (value) => value.toUpperCase().replace(prepareReg, "");
+    let i = 0;
+    let b;
+    key = prepare(key);
+    let value = prepare(text).replace(secondReg, (a) => {
+      b = key[i++ % key.length];
+      return String.fromCharCode(
+        ((calcCode(a) + (decode ? 26 - calcCode(b) : calcCode(b))) % 26) + 65
+      );
+    });
+    if (!this.direct) {
+      value = value.split("").reverse().join("");
+    }
+    return value;
+  }
+
+  encrypt(text, key) {
+    return this.process(text, key);
+  }
+  decrypt(enc, key) {
+    return this.process(enc, key, true);
   }
 }
